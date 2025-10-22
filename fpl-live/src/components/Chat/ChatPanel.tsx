@@ -21,9 +21,9 @@ export default function ChatPanel() {
                 toolsContext: {
                     currentGW: currentEvent?.id,
                     fixtures,
-                    players: bootstrap?.elements?.slice(0, 300), // trim context volume
+                    players: bootstrap?.elements?.slice(0, 300),
                 },
-            })
+            });
             setHistory([...next, { role: 'assistant', content: resp.text }])
         } catch (e: any) {
             setHistory([...next, { role: 'assistant', content: `Error: ${e?.message ?? 'failed'}` }])
