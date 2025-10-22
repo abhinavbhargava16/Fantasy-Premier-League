@@ -10,7 +10,8 @@ import type {
 } from '../types/fpl.types'
 import { BootstrapSchema } from '../types/fpl.types'
 
-const BASE_URL = import.meta.env.VITE_FPL_BASE_URL || 'https://fantasy.premierleague.com/api'
+// const BASE_URL = import.meta.env.VITE_FPL_BASE_URL || 'https://fantasy.premierleague.com/api'
+const BASE_URL = '/api'
 
 // --- Generic fetch with timeouts, retries (429/5xx), and optional cache ---
 const DEFAULT_TIMEOUT = 10000
