@@ -95,6 +95,11 @@ export async function getEntryPicks(entryId: number, gw: number): Promise<EntryE
   return fetchJson<EntryEventPicks>(`/entry/${entryId}/event/${gw}/picks/`, {}, false)
 }
 
+// Historical ranks and points for an entry across gameweeks
+export async function getEntryHistory(entryId: number): Promise<any> {
+  return fetchJson<any>(`/entry/${entryId}/history/`, {}, true)
+}
+
 export async function getLive(gw: number): Promise<LiveEventResponse> {
   return fetchJson<LiveEventResponse>(`/event/${gw}/live/`, {}, false)
 }

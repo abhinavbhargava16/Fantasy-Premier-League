@@ -4,6 +4,7 @@ import TeamView from '../TeamView/TeamView';
 import LeagueStandings from './LeagueStandings';
 import type { EntryEventPicks, EntrySummary } from '../../types/fpl.types';
 import { useFPLStore } from '../../store/fplStore';
+import RankDetails from './RankDetails';
 
 export default function Dashboard({ picks, entry, busy }: { picks?: EntryEventPicks, entry?: EntrySummary, busy?: boolean }) {
   const { teamId } = useFPLStore();
@@ -21,6 +22,7 @@ export default function Dashboard({ picks, entry, busy }: { picks?: EntryEventPi
       </div>
 
       <div className="flex flex-col gap-6">
+        {picks && <RankDetails picks={picks} entry={entry} />}
         <FixturesPanel />
         {teamId ? <LeagueStandings teamId={teamId} /> : null}
       </div>
