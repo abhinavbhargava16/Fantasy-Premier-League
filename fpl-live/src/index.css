@@ -4,5 +4,6 @@
 
 
 body {
-    @apply bg-gray-50 text-zinc-900 font-fpl;
+    /* Purple site background to match FPL aesthetic */
+    @apply bg-fplPurple font-fpl;
 }

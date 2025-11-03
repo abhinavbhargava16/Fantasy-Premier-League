@@ -11,7 +11,7 @@ module.exports = {
         fplGray: '#1a1a1a',
       },
       fontFamily: {
-        fpl: ['"Poppins"', 'sans-serif'],
+        fpl: ['"Manrope"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },

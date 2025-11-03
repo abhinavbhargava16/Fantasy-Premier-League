@@ -95,7 +95,7 @@ export default function LiveFixtures() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      <div className="text-2xl font-semibold mb-4">Gameweek {currentGw} Games</div>
+      <div className="text-2xl font-semibold mb-4 text-white">Gameweek {currentGw} Games</div>
       <div className="grid md:grid-cols-2 gap-6">
         {byFixture.map(({ f, home, away, hGoals, aGoals, hAssists, aAssists, bpsTop, hBps, aBps, hDefcon, aDefcon }) => (
           <div
@@ -119,8 +119,8 @@ export default function LiveFixtures() {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className={`text-xs px-2 py-0.5 rounded ${f.finished ? 'bg-blue-600 text-white' : 'bg-amber-100 text-amber-700'}`}>
-                    {f.finished ? 'Done' : f.started ? 'Live' : 'Upcoming'}
+                  <div className={`text-xs px-2 py-0.5 rounded ${f.finished ? 'bg-green-600 text-white' : 'bg-amber-100 text-amber-700'}`}>
+                    {f.finished ? 'Completed' : f.started ? 'Live' : 'Upcoming'}
                   </div>
                   <div className="text-2xl font-bold mt-2">
                     {f.team_h_score ?? '-'} <span className="text-zinc-400">:</span> {f.team_a_score ?? '-'}
@@ -144,7 +144,7 @@ export default function LiveFixtures() {
                     <div key={`hg-${g.id}-${i}`}>{name(g.id)} <span className="ml-1">⚽×{g.n}</span></div>
                   ))}
                   {hAssists.map((a, i) => (
-                    <div key={`ha-${a.id}-${i}`} className="text-sky-700">{name(a.id)} <span className="ml-1">A×{a.n}</span></div>
+                    <div key={`ha-${a.id}-${i}`} className="text-sky-700">{name(a.id)} <span className="ml-1">🅰️×{a.n}</span></div>
                   ))}
                 </div>
                 <div className="h-full w-px bg-zinc-300 mx-auto" />
@@ -153,7 +153,7 @@ export default function LiveFixtures() {
                     <div key={`ag-${g.id}-${i}`}>{name(g.id)} <span className="ml-1">⚽×{g.n}</span></div>
                   ))}
                   {aAssists.map((a, i) => (
-                    <div key={`aa-${a.id}-${i}`} className="text-sky-700">{name(a.id)} <span className="ml-1">A×{a.n}</span></div>
+                    <div key={`aa-${a.id}-${i}`} className="text-sky-700">{name(a.id)} <span className="ml-1">🅰️×{a.n}</span></div>
                   ))}
                 </div>
               </div>
