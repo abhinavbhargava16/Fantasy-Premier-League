@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 
-body { 
-    @apply bg-zinc-950 text-zinc-100 font-fpl; 
-    background-image: url('/assets/pitch-bg.png');
+body {
+    @apply bg-gray-50 text-zinc-900 font-fpl;
 }

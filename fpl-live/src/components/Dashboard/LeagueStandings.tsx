@@ -45,12 +45,12 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
   );
 
   return (
-    <div className="bg-zinc-900 p-5 rounded-2xl shadow-lg text-gray-200">
+    <div className="bg-white p-5 rounded-2xl shadow-sm border border-zinc-200 text-zinc-800">
       <h2 className="text-lg font-semibold mb-4">Mini-League Standings</h2>
 
       {/* League Dropdown */}
       <select
-        className="w-full mb-3 bg-zinc-800 text-gray-100 rounded-lg px-3 py-2 outline-none border border-zinc-700 focus:border-emerald-500"
+        className="w-full mb-3 bg-white text-zinc-800 rounded-lg px-3 py-2 outline-none border border-zinc-300 focus:border-violet-500"
         value={selectedLeague ?? ''}
         onChange={(e) => setSelectedLeague(Number(e.target.value))}
       >
@@ -66,13 +66,13 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
       <input
         type="text"
         placeholder="Search manager..."
-        className="w-full mb-3 bg-zinc-800 text-gray-100 rounded-lg px-3 py-2 outline-none border border-zinc-700 focus:border-emerald-500"
+        className="w-full mb-3 bg-white text-zinc-800 rounded-lg px-3 py-2 outline-none border border-zinc-300 focus:border-violet-500"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
       {/* Standings */}
-      <div className="overflow-y-auto max-h-[400px] rounded-lg border border-zinc-800">
+      <div className="overflow-y-auto max-h-[400px] rounded-lg border border-zinc-200">
         {filtered.map((s) => {
           const rankDiff = s.last_rank - s.rank;
           const color =
@@ -87,7 +87,7 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
           return (
             <motion.div
               key={s.entry}
-              className="flex justify-between items-center border-b border-zinc-800 p-3 hover:bg-zinc-800/70 cursor-pointer transition-colors"
+              className="flex justify-between items-center border-b border-zinc-200 p-3 hover:bg-zinc-100 cursor-pointer transition-colors"
               onClick={() => setSelectedPlayer(s)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -97,13 +97,13 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
                 <span className={`font-semibold ${color}`}>
                   {s.rank} {arrow}
                 </span>
-                <span className="block text-xs text-gray-400">
+                <span className="block text-xs text-zinc-500">
                   {s.player_name}
                 </span>
               </div>
               <div className="text-right">
                 <p className="font-medium">{s.event_total} pts</p>
-                <p className="text-xs text-gray-400">{s.total} total</p>
+                <p className="text-xs text-zinc-500">{s.total} total</p>
               </div>
             </motion.div>
           );
@@ -114,14 +114,14 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
       <AnimatePresence>
         {selectedPlayer && (
           <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedPlayer(null)}
           >
             <motion.div
-              className="bg-zinc-900 rounded-2xl p-6 shadow-xl max-w-md w-full text-gray-100 border border-zinc-700"
+              className="bg-white rounded-2xl p-6 shadow-xl max-w-md w-full text-zinc-800 border border-zinc-200"
               onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

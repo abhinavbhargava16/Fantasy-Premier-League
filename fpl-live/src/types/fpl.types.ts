@@ -11,6 +11,8 @@ export const EventSchema = z.object({
   finished: z.boolean().nullable().optional(),
   data_checked: z.boolean().nullable().optional(),
   deadline_time: z.string(),
+  average_entry_score: z.number().nullable().optional(),
+  highest_score: z.number().nullable().optional(),
 })
 export type Event = z.infer<typeof EventSchema>
 
@@ -18,6 +20,7 @@ export const TeamSchema = z.object({
   id: z.number(),
   name: z.string(),
   short_name: z.string(),
+  code: z.number(),
 })
 export type Team = z.infer<typeof TeamSchema>
 
