@@ -13,17 +13,19 @@ import type { EntryEventPicks } from './types/fpl.types'
 export default function App() {
   useBootstrap()
   useLiveScores({ intervalMs: 30000 })
-  const { loading, error, currentEvent } = useFPLStore()
-  const [teamId, setTeamId] = useState<string>('')
+  const { loading, error, currentEvent, setTeamId } = useFPLStore()
+  const [teamInput, setTeamInput] = useState<string>('')
   const [picks, setPicks] = useState<EntryEventPicks | undefined>()
   const [busy, setBusy] = useState(false)
 
 
   async function loadTeam() {
-    if (!teamId || !currentEvent?.id) return
+    if (!teamInput || !currentEvent?.id) return
     setBusy(true)
     try {
-      const data = await getEntryPicks(Number(teamId), currentEvent.id)
+      // Save entry id globally so other widgets (e.g., leagues) can render
+      setTeamId(Number(teamInput))
+      const data = await getEntryPicks(Number(teamInput), currentEvent.id)
       setPicks(data)
     } catch (e: any) {
       alert(e?.message ?? 'Failed to load team')
@@ -48,8 +50,8 @@ export default function App() {
         <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
           <div className="flex items-center gap-2">
             <input
-              value={teamId}
-              onChange={(e) => setTeamId(e.target.value)}
+              value={teamInput}
+              onChange={(e) => setTeamInput(e.target.value)}
               placeholder="Enter your Team ID (entry)"
               className="bg-zinc-900 border-zinc-800 rounded-xl text-sm w-56"
             />

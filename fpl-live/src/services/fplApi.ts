@@ -107,3 +107,37 @@ export async function getFixtures(gw?: number): Promise<Fixture[]> {
 export async function getClassicLeague(leagueId: number, page = 1): Promise<ClassicLeagueStandings> {
   return fetchJson<ClassicLeagueStandings>(`/leagues-classic/${leagueId}/standings/?page_new_entries=1&page_standings=${page}`)
 }
+
+// src/services/fplApi.ts
+export async function fetchManagerLeagues(teamId: number) {
+  const res = await fetch(`/api/entry/${teamId}/`);
+  if (!res.ok) throw new Error('Failed to fetch manager leagues');
+  const data = await res.json();
+  return data.leagues.classic || [];
+}
+
+export async function fetchLeagueStandings(leagueId: number) {
+  const res = await fetch(`/api/leagues-classic/${leagueId}/standings/`);
+  if (!res.ok) throw new Error('Failed to fetch league standings');
+  const data = await res.json();
+  return data.standings.results;
+}
+
+export async function fetchBootstrap() {
+  const res = await fetch('/api/bootstrap-static/');
+  if (!res.ok) throw new Error('Failed to fetch bootstrap data');
+  return res.json();
+}
+
+export async function fetchFixtures() {
+  const res = await fetch('/api/fixtures/');
+  if (!res.ok) throw new Error('Failed to fetch fixtures');
+  return res.json();
+}
+
+export async function fetchClassicLeagues(teamId: number) {
+  const res = await fetch(`/api/entry/${teamId}/`);
+  if (!res.ok) throw new Error('Failed to fetch leagues');
+  const data = await res.json();
+  return data.leagues.classic || [];
+}

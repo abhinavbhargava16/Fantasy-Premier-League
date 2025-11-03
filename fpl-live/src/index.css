@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+body { 
+    @apply bg-zinc-950 text-zinc-100 font-fpl; 
+    background-image: url('/assets/pitch-bg.png');
+}

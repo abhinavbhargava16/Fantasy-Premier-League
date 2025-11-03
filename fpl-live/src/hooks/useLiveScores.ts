@@ -4,53 +4,59 @@ import { getLive } from "../services/fplApi";
 import { useFPLStore } from "../store/fplStore";
 
 interface Options {
-  intervalMs?: number;
+  intervalMs?: number; // polling frequency (default 30s)
 }
 
 export function useLiveScores(options: Options = {}) {
   const { currentEvent, setLive, setError } = useFPLStore();
   const intervalMs = options.intervalMs ?? 30000;
-  const timerRef = useRef<number | null>(null);
+
+  // refs to persist values across renders
   const backoffRef = useRef(0);
+  const isActiveRef = useRef(true);
 
   const poll = useCallback(async () => {
     if (!currentEvent?.id) return;
     try {
       const liveRes = await getLive(currentEvent.id);
+
+      // Convert array to { [playerId]: stats } for faster lookup
       const liveIndex = liveRes.elements.reduce((acc: any, el) => {
         acc[el.id] = el.stats;
         return acc;
       }, {});
+
       setLive(liveIndex);
-      backoffRef.current = 0; // reset backoff on success
+      backoffRef.current = 0; // reset backoff after success
     } catch (e: any) {
-      console.error(e);
+      console.error("Live fetch failed:", e);
       setError(e?.message ?? "Live fetch failed");
-      // exponential backoff up to 4x
+      // exponential backoff (max 4x delay)
       backoffRef.current = Math.min(backoffRef.current + 1, 4);
     }
   }, [currentEvent?.id, setLive, setError]);
 
   useEffect(() => {
-    let active = true;
-    const visibilityHandler = () => {
+    if (!currentEvent?.id) return;
+
+    const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") poll();
     };
-    document.addEventListener("visibilitychange", visibilityHandler);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    async function loop() {
-      while (active) {
+    // polling loop
+    (async function loop() {
+      while (isActiveRef.current) {
         await poll();
-        const backoff = Math.pow(2, backoffRef.current);
-        await new Promise((r) => setTimeout(r, intervalMs * backoff));
+        const delay = intervalMs * Math.pow(2, backoffRef.current);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
-    }
-    loop();
+    })();
 
     return () => {
-      active = false;
-      document.removeEventListener("visibilitychange", visibilityHandler);
-      if (timerRef.current) window.clearInterval(timerRef.current);
+      isActiveRef.current = false;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [poll, intervalMs]);
+  }, [poll, intervalMs, currentEvent?.id]);
 }
+

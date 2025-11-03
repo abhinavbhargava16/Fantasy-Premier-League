@@ -1,7 +1,19 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  darkMode: 'class',
-  content: ['./index.html', './src/**/*.{ts,tsx}'],
-  theme: { extend: {} },
-  plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
-}
+module.exports = {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        fplPurple: '#37003c',
+        fplTeal: '#00ff87',
+        fplGreen: '#04f5c4',
+        fplDark: '#0b0b0b',
+        fplGray: '#1a1a1a',
+      },
+      fontFamily: {
+        fpl: ['"Poppins"', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+};

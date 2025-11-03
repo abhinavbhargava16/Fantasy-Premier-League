@@ -6,9 +6,14 @@ import type {
   Fixture,
   LiveIndex,
   PlayerIndex,
+  EntryEventPicks,
 } from "../types/fpl.types";
 
 interface FPLState {
+  teamId: number | null;
+  setTeamId: (id: number) => void;
+  picks?: EntryEventPicks;
+  setPicks: (p: EntryEventPicks) => void;
   bootstrap?: Bootstrap;
   currentEvent?: Event;
   players?: PlayerIndex;
@@ -32,4 +37,8 @@ export const useFPLStore = create<FPLState>((set) => ({
   setFixtures: (fixtures) => set({ fixtures }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
+  teamId: null,
+  setTeamId: (id) => set({ teamId: id }),
+  picks: undefined,
+  setPicks: (p) => set({ picks: p }),
 }));
