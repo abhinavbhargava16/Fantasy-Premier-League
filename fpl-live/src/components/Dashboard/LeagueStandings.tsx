@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchManagerLeagues, fetchLeagueStandings } from '../../services/fplApi';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,6 +23,7 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
   const [standings, setStandings] = useState<Standing[]>([]);
   const [search, setSearch] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<Standing | null>(null);
+  const navigate = useNavigate();
 
   // Fetch all leagues for the given team
   useEffect(() => {
@@ -70,6 +72,18 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
+
+      {/* Actions */}
+      <div className="flex justify-end mb-2">
+        {selectedLeague && (
+          <button
+            onClick={() => navigate(`/league/${selectedLeague}`)}
+            className="px-3 py-1.5 rounded-lg bg-fplPurple text-white text-sm"
+          >
+            View detailed table
+          </button>
+        )}
+      </div>
 
       {/* Standings */}
       <div className="overflow-y-auto max-h-[400px] rounded-lg border border-zinc-200">

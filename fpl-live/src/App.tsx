@@ -6,6 +6,8 @@ import { useLiveScores } from './hooks/useLiveScores'
 import { useFPLStore } from './store/fplStore'
 import Dashboard from './components/Dashboard/Dashboard'
 import LiveFixtures from './components/Fixtures/LiveFixtures'
+import Analytics from './components/Analytics/Analytics'
+import LeagueDetails from './components/LeagueDetails/LeagueDetails'
 import { getEntry, getEntryPicks } from './services/fplApi'
 import type { EntryEventPicks } from './types/fpl.types'
 import type { EntrySummary } from './types/fpl.types'
@@ -71,6 +73,17 @@ export default function App() {
               >
                 Fixtures
               </NavLink>
+              <NavLink
+                to="/analytics"
+                className={({ isActive }) => [
+                  'px-3 py-1.5 rounded-xl border transition-colors',
+                  isActive
+                    ? 'border-fplPurple text-fplPurple bg-fplPurple/10'
+                    : 'border-fplPurple/30 text-fplPurple hover:border-fplPurple/70 hover:bg-fplPurple/10'
+                ].join(' ')}
+              >
+                Analytics
+              </NavLink>
             </nav>
           </div>
         </header>
@@ -105,6 +118,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard picks={picks} entry={entry} busy={busy} />} />
             <Route path="/fixtures" element={<LiveFixtures />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/league/:leagueId" element={<LeagueDetails />} />
           </Routes>
         </main>
       </div>
