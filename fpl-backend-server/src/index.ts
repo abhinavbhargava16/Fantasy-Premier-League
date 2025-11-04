@@ -3,9 +3,13 @@ import cors from 'cors'
 import axios from 'axios'
 
 const app = express()
-const PORT = 4000
+const PORT = Number(process.env.PORT || 4000)
 
-app.use(cors({ origin: 'http://localhost:5173' }))
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : '*' }))
 
 type CacheEntry<T = any> = { data: T; expiresAt: number }
 const cache: Record<string, CacheEntry> = {}
@@ -109,11 +113,12 @@ async function resolveFplTeamCodeByName(name: string): Promise<number | undefine
   return match?.code
 }
 
+const ASSETS_BASE = (process.env.ASSETS_BASE_URL || process.env.FRONTEND_ORIGIN || 'http://localhost:5173').replace(/\/+$/, '')
 function badgeUrlForCode(code?: number) {
-  return code ? `http://localhost:5173/assets/badges/${code}.png` : undefined
+  return code ? `${ASSETS_BASE}/assets/badges/${code}.png` : undefined
 }
 function shirtUrlForCode(code?: number) {
-  return code ? `http://localhost:5173/assets/shirts/${code}.png` : undefined
+  return code ? `${ASSETS_BASE}/assets/shirts/${code}.png` : undefined
 }
 
 // Try to resolve Understat player id from a search term (player name)
@@ -285,5 +290,5 @@ app.get('/api/team/:team', async (req, res) => {
 app.get('/healthz', (_req, res) => res.json({ ok: true }))
 
 app.listen(PORT, () => {
-  console.log(`Analytics server listening on http://localhost:${PORT}`)
+  console.log(`Analytics server listening on port ${PORT}`)
 })

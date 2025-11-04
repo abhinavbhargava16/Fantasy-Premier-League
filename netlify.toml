@@ -1,0 +1,21 @@
+[build]
+  base = "fpl-live"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Proxy FPL official API to avoid browser CORS
+[[redirects]]
+  from = "/api/*"
+  to = "https://fantasy.premierleague.com/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
