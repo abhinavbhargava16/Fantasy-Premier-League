@@ -204,7 +204,6 @@ export default function LiveFixtures() {
     return idx;
   }, [teams]);
 
-  const maxGw = useMemo(() => (bootstrap?.events?.length ? Math.max(...bootstrap.events.map((e: any) => e.id)) : 38), [bootstrap]);
   const byFixture = useMemo(() => {
     if (!players || !activeGw) return [] as any[];
     const gwFixtures = (fixtures ?? []).filter((f) => f.event === activeGw);
