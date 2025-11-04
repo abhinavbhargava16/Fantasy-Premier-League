@@ -5,21 +5,33 @@ import { calculatePoints } from '../../services/scoreCalculator';
 import { getEntryPicks, getLive } from '../../services/fplApi';
 // import pitchBg from '../../assets/pitch-bg.png';
 
-export default function TeamView({ picks, entry }: { picks?: EntryEventPicks, entry?: EntrySummary }) {
+export default function TeamView({ picks, entry, mode = 'live', planGw }: { picks?: EntryEventPicks, entry?: EntrySummary, mode?: 'live' | 'plan', planGw?: number }) {
   const { players, bootstrap, live, fixtures, currentEvent, teamId } = useFPLStore();
-  const [activeGW, setActiveGW] = useState<number | undefined>(currentEvent?.id);
+  const initialGw = (mode === 'plan' ? (planGw ?? currentEvent?.id) : currentEvent?.id);
+  const [activeGW, setActiveGW] = useState<number | undefined>(initialGw);
   const [localPicks, setLocalPicks] = useState<EntryEventPicks | undefined>();
   const [localLive, setLocalLive] = useState<any | undefined>();
   const [loadingGw, setLoadingGw] = useState(false);
   // Initialize activeGW when bootstrap/currentEvent loads
   useEffect(() => {
+    if (mode === 'plan') {
+      // Keep GW in sync with external planner controls
+      if (planGw && planGw !== activeGW) setActiveGW(planGw);
+      return;
+    }
     if (currentEvent?.id && !activeGW) setActiveGW(currentEvent.id);
-  }, [currentEvent, activeGW]);
+  }, [currentEvent, activeGW, mode, planGw]);
 
   // Fetch historic picks/live when browsing a different GW
   useEffect(() => {
     const wantGw = activeGW;
     if (!wantGw || !teamId) return;
+    // In planner mode, we deliberately do not fetch historic/future picks or live
+    if (mode === 'plan') {
+      setLocalPicks(undefined);
+      setLocalLive(undefined);
+      return;
+    }
     const isCurrent = currentEvent?.id === wantGw;
     if (isCurrent) {
       setLocalPicks(undefined);
@@ -49,10 +61,10 @@ export default function TeamView({ picks, entry }: { picks?: EntryEventPicks, en
       }
     })();
     return () => { cancelled = true };
-  }, [activeGW, teamId, currentEvent?.id]);
+  }, [activeGW, teamId, currentEvent?.id, mode]);
 
-  const usingPicks = localPicks ?? picks;
-  const usingLive = (localPicks ? localLive : live) as any;
+  const usingPicks = (mode === 'plan') ? (picks) : (localPicks ?? picks);
+  const usingLive = (mode === 'plan') ? ({} as any) : ((localPicks ? localLive : live) as any);
 
   // Only guard when no picks yet
   if (!usingPicks) return null;
