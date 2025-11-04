@@ -64,6 +64,9 @@ export default function RankDetails({ picks, entry }: { picks?: EntryEventPicks;
   const rankPercent = data.overallRank && totalPlayers ? (data.overallRank / totalPlayers) * 100 : null
   const ranksGained = oldRank && data.overallRank ? oldRank - data.overallRank : null
   const changePct = oldRank && ranksGained != null ? (ranksGained / oldRank) * 100 : null
+  const gained = ranksGained != null && ranksGained > 0
+  const dropped = ranksGained != null && ranksGained < 0
+  const arrow = gained ? '▲' : dropped ? '▼' : '•'
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
@@ -91,14 +94,21 @@ export default function RankDetails({ picks, entry }: { picks?: EntryEventPicks;
       </div>
 
       <div className="px-4 py-2 bg-gradient-to-r from-sky-100 via-indigo-100 to-fuchsia-100 border-y border-zinc-200 text-zinc-800 font-semibold">
-        📈 Ranks Gained: {ranksGained != null ? ranksGained.toLocaleString() : '—'}
+        <span>📈 Ranks Gained:</span>
+        <span className={`ml-2 ${gained ? 'text-emerald-700' : dropped ? 'text-red-600' : 'text-zinc-800'}`}>
+          {arrow} {ranksGained != null ? ranksGained.toLocaleString() : '—'}
+        </span>
       </div>
 
       <div className="px-4 py-3 text-zinc-900">
         <div className="grid grid-cols-2 gap-3">
           <Stat label="Rank Pre-Subs" value={oldRank ? oldRank.toLocaleString() : '—'} />
           <Stat label="Old Rank" value={oldRank ? oldRank.toLocaleString() : '—'} />
-          <Stat label="Change %" value={changePct != null ? `${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%` : '—'} />
+          <Stat
+            label="Change %"
+            value={changePct != null ? `${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%` : '—'}
+            valueClass={changePct != null ? (changePct > 0 ? 'text-emerald-600' : changePct < 0 ? 'text-red-500' : 'text-zinc-900') : ''}
+          />
           <Stat label="Rank Post-Subs" value={data.overallRank ? data.overallRank.toLocaleString() : '—'} />
           <Stat label="GW Rank" value={data.gwRank ? data.gwRank.toLocaleString() : '—'} />
           <Stat label="Rank %" value={rankPercent != null ? `Top ${rankPercent.toFixed(2)}%` : '—'} />
@@ -108,11 +118,11 @@ export default function RankDetails({ picks, entry }: { picks?: EntryEventPicks;
   )
 }
 
-function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+function Stat({ label, value, sub, valueClass = '' }: { label: string; value: string | number; sub?: string; valueClass?: string }) {
   return (
     <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-200">
       <div className="text-xs text-zinc-500">{label}</div>
-      <div className="text-xl font-semibold text-zinc-900">{value}</div>
+      <div className={`text-xl font-semibold text-zinc-900 ${valueClass}`}>{value}</div>
       {sub && <div className="text-[10px] text-zinc-500">{sub}</div>}
     </div>
   )

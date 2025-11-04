@@ -68,11 +68,31 @@ export default function LiveFixtures() {
       const hBps = byBps(hStats);
       const aBps = byBps(aStats);
 
-      const isDef = (id: number) => players[id]?.element_type === 1 || players[id]?.element_type === 2;
-      const hDefcon = hStats.filter((x) => isDef(x.id)).map((x) => ({ id: x.id, v: (x.s.bps ?? 0) + (x.s.saves ?? 0) + (x.s.clean_sheets ?? 0) }))
-        .sort((a, b) => b.v - a.v).slice(0, 10);
-      const aDefcon = aStats.filter((x) => isDef(x.id)).map((x) => ({ id: x.id, v: (x.s.bps ?? 0) + (x.s.saves ?? 0) + (x.s.clean_sheets ?? 0) }))
-        .sort((a, b) => b.v - a.v).slice(0, 10);
+      // Determine bonus winners and map to emojis 3/2/1
+      const awards: Record<number, string> = {};
+      const bonusRank = [...hStats, ...aStats]
+        .map((x) => ({ id: x.id, bonus: x.s.bonus ?? 0, bps: x.s.bps ?? 0 }))
+        .filter((x) => x.bonus > 0)
+        .sort((a, b) => (b.bonus - a.bonus) || (b.bps - a.bps));
+      for (const x of bonusRank) {
+        if (x.bonus === 3) awards[x.id] = '🥇';
+        else if (x.bonus === 2) awards[x.id] = '🥈';
+        else if (x.bonus === 1) awards[x.id] = '🥉';
+      }
+
+      // Outfield-only defensive contribution (exclude goalkeepers)
+      const isOutfieldDef = (id: number) => players[id]?.element_type === 2;
+      const defValue = (x: { s: any }) => (x.s.bps ?? 0) + (x.s.clean_sheets ?? 0);
+      const hDefcon = hStats
+        .filter((x) => isOutfieldDef(x.id))
+        .map((x) => ({ id: x.id, v: defValue(x) }))
+        .sort((a, b) => b.v - a.v)
+        .slice(0, 10);
+      const aDefcon = aStats
+        .filter((x) => isOutfieldDef(x.id))
+        .map((x) => ({ id: x.id, v: defValue(x) }))
+        .sort((a, b) => b.v - a.v)
+        .slice(0, 10);
 
       return {
         f,
@@ -85,6 +105,7 @@ export default function LiveFixtures() {
         bpsTop: combineForBps,
         hBps,
         aBps,
+        awards,
         hDefcon,
         aDefcon,
       };
@@ -97,7 +118,7 @@ export default function LiveFixtures() {
     <div className="max-w-6xl mx-auto px-4 py-6">
       <div className="text-2xl font-semibold mb-4 text-white">Gameweek {currentGw} Games</div>
       <div className="grid md:grid-cols-2 gap-6">
-        {byFixture.map(({ f, home, away, hGoals, aGoals, hAssists, aAssists, bpsTop, hBps, aBps, hDefcon, aDefcon }) => (
+        {byFixture.map(({ f, home, away, hGoals, aGoals, hAssists, aAssists, bpsTop, hBps, aBps, awards, hDefcon, aDefcon }) => (
           <div
             key={f.id}
             className="rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-sm"
@@ -161,31 +182,37 @@ export default function LiveFixtures() {
               {/* BPS & DEFCON */}
               <details className="mt-2 bg-zinc-50 rounded-md p-3 border border-zinc-200" open>
                 <summary className="cursor-pointer text-center text-sm font-medium">BPS & DEFCON</summary>
-                <div className="mt-3 grid grid-cols-2 gap-6">
+                <div className="mt-3 space-y-4">
+                  {/* Bonus Row */}
                   <div>
-                    <div className="font-semibold mb-1">Bonus (BPS)</div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="font-semibold mb-1 text-center">Bonus (BPS)</div>
+                    <div className="grid grid-cols-2 gap-4 text-sm text-center">
                       <div>
+                        <div className="text-s text-zinc-500 mb-1">{home?.short}</div>
                         {hBps.slice(0,6).map((x) => (
-                          <div key={`hb-${x.id}`}>{name(x.id)} <span className="text-zinc-500">({x.bps})</span></div>
+                          <div key={`hb-${x.id}`}>{name(x.id)} {awards[x.id] && <span className="ml-1">{awards[x.id]}</span>} <span className="text-zinc-500">({x.bps})</span></div>
                         ))}
                       </div>
                       <div>
+                        <div className="text-s text-zinc-500 mb-1">{away?.short}</div>
                         {aBps.slice(0,6).map((x) => (
-                          <div key={`ab-${x.id}`}>{name(x.id)} <span className="text-zinc-500">({x.bps})</span></div>
+                          <div key={`ab-${x.id}`}>{name(x.id)} {awards[x.id] && <span className="ml-1">{awards[x.id]}</span>} <span className="text-zinc-500">({x.bps})</span></div>
                         ))}
                       </div>
                     </div>
                   </div>
+                  {/* Defcon Row */}
                   <div>
-                    <div className="font-semibold mb-1">Defcon (DEF/GKP)</div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="font-semibold mb-1 text-center">Defcon (DEF)</div>
+                    <div className="grid grid-cols-2 gap-4 text-sm text-center">
                       <div>
+                        <div className="text-s text-zinc-500 mb-1">{home?.short}</div>
                         {hDefcon.slice(0,6).map((x) => (
                           <div key={`hd-${x.id}`}>{name(x.id)} <span className="text-zinc-500">({x.v})</span></div>
                         ))}
                       </div>
                       <div>
+                        <div className="text-s text-zinc-500 mb-1">{away?.short}</div>
                         {aDefcon.slice(0,6).map((x) => (
                           <div key={`ad-${x.id}`}>{name(x.id)} <span className="text-zinc-500">({x.v})</span></div>
                         ))}

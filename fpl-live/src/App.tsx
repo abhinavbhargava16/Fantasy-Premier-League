@@ -7,7 +7,9 @@ import { useFPLStore } from './store/fplStore'
 import Dashboard from './components/Dashboard/Dashboard'
 import LiveFixtures from './components/Fixtures/LiveFixtures'
 import Analytics from './components/Analytics/Analytics'
+import TeamPlanner from './components/TeamPlanner/TeamPlanner'
 import LeagueDetails from './components/LeagueDetails/LeagueDetails'
+import PriceChanges from './components/PriceChanges/PriceChanges'
 import { getEntry, getEntryPicks } from './services/fplApi'
 import type { EntryEventPicks } from './types/fpl.types'
 import type { EntrySummary } from './types/fpl.types'
@@ -84,6 +86,28 @@ export default function App() {
               >
                 Analytics
               </NavLink>
+              <NavLink
+                to="/planner"
+                className={({ isActive }) => [
+                  'px-3 py-1.5 rounded-xl border transition-colors',
+                  isActive
+                    ? 'border-fplPurple text-fplPurple bg-fplPurple/10'
+                    : 'border-fplPurple/30 text-fplPurple hover:border-fplPurple/70 hover:bg-fplPurple/10'
+                ].join(' ')}
+              >
+                Team Planner
+              </NavLink>
+              <NavLink
+                to="/price-changes"
+                className={({ isActive }) => [
+                  'px-3 py-1.5 rounded-xl border transition-colors',
+                  isActive
+                    ? 'border-fplPurple text-fplPurple bg-fplPurple/10'
+                    : 'border-fplPurple/30 text-fplPurple hover:border-fplPurple/70 hover:bg-fplPurple/10'
+                ].join(' ')}
+              >
+                Price Changes
+              </NavLink>
             </nav>
           </div>
         </header>
@@ -120,6 +144,8 @@ export default function App() {
             <Route path="/fixtures" element={<LiveFixtures />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/league/:leagueId" element={<LeagueDetails />} />
+            <Route path="/price-changes" element={<PriceChanges />} />
+            <Route path="/planner" element={<TeamPlanner picks={picks} entry={entry} />} />
           </Routes>
         </main>
       </div>

@@ -13,6 +13,10 @@ export default function TeamPlanner({ picks, entry }: { picks?: EntryEventPicks,
   const defaultGw = Math.min((currentGw || 1) + 1, maxGw);
   const [gw, setGw] = useState<number>(defaultGw);
   const [localLive, setLocalLive] = useState<Record<number, any> | null>(null);
+  // Local working copy of picks for planner swaps
+  const [planPicks, setPlanPicks] = useState<EntryEventPicks | undefined>(picks);
+  // Currently selected starter to swap out
+  const [selectedStarter, setSelectedStarter] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -60,19 +64,55 @@ export default function TeamPlanner({ picks, entry }: { picks?: EntryEventPicks,
     return out;
   }, [fixtures, bootstrap, gw]);
 
+  // Keep local plan picks in sync when source changes
+  useEffect(() => { setPlanPicks(picks); }, [picks]);
+
   const starters = useMemo(() => {
-    if (!picks) return [] as any[];
-    return picks.picks.filter(p => p.position <= 11).sort((a,b)=>a.position-b.position);
-  }, [picks]);
+    if (!planPicks) return [] as any[];
+    return planPicks.picks.filter(p => p.position <= 11).sort((a,b)=>a.position-b.position);
+  }, [planPicks]);
   const bench = useMemo(() => {
-    if (!picks) return [] as any[];
-    return picks.picks.filter(p => p.position > 11).sort((a,b)=>a.position-b.position);
-  }, [picks]);
+    if (!planPicks) return [] as any[];
+    return planPicks.picks.filter(p => p.position > 11).sort((a,b)=>a.position-b.position);
+  }, [planPicks]);
+
+  const counts = useMemo(() => {
+    const c = { gk: 0, def: 0, mid: 0, fwd: 0 };
+    for (const s of starters) {
+      const et = players?.[s.element]?.element_type;
+      if (et === 1) c.gk++;
+      else if (et === 2) c.def++;
+      else if (et === 3) c.mid++;
+      else if (et === 4) c.fwd++;
+    }
+    return c;
+  }, [starters, players]);
+
+  const minByType = { def: 3, mid: 2, fwd: 1 } as const;
+
+  const isBenchEligibleForSelected = (benchElementId: number) => {
+    if (!selectedStarter || !players) return true;
+    const selType = players[selectedStarter]?.element_type;
+    const bType = players[benchElementId]?.element_type;
+    if (!selType || !bType) return false;
+    if (selType === 1) return bType === 1; // GK only for GK
+    // Outfield: ensure minimums after removing selected
+    if (selType === 2 && counts.def <= minByType.def) return bType === 2;
+    if (selType === 3 && counts.mid <= minByType.mid) return bType === 3;
+    if (selType === 4 && counts.fwd <= minByType.fwd) return bType === 4;
+    // otherwise any outfield
+    return bType !== 1;
+  };
+
+  const eligibleBench = useMemo(() => {
+    if (!selectedStarter) return bench;
+    return bench.filter((b) => isBenchEligibleForSelected(b.element));
+  }, [bench, selectedStarter, players, counts]);
 
   const calc = useMemo(() => {
-    if (!players || !picks || !localLive) return null;
-    return calculatePoints(picks, localLive, players);
-  }, [players, picks, localLive]);
+    if (!players || !planPicks || !localLive) return null;
+    return calculatePoints(planPicks, localLive, players);
+  }, [players, planPicks, localLive]);
 
   const pointsById = useMemo(() => {
     const out: Record<number, number> = {};
@@ -81,7 +121,7 @@ export default function TeamPlanner({ picks, entry }: { picks?: EntryEventPicks,
     return out;
   }, [calc]);
 
-  const tile = (id: number, badge?: string) => {
+  const tile = (id: number, badge?: string, opts?: { onClick?: () => void; active?: boolean; disabled?: boolean }) => {
     const pl = players?.[id];
     if (!pl) return null;
     const code = teamCodeById[pl.team];
@@ -94,8 +134,16 @@ export default function TeamPlanner({ picks, entry }: { picks?: EntryEventPicks,
     const pts = (pointsById[id] ?? liveStats?.total_points ?? 0) as number;
 
     // Card UI aligned with TeamView/EntryLineup style
+    const clickable = !!opts?.onClick;
+    const classes = [
+      'group relative flex flex-col items-center text-center w-24 transition-all',
+      opts?.active ? 'ring-2 ring-white/90 rounded-xl bg-white/10' : '',
+      opts?.disabled ? 'opacity-50 pointer-events-none' : '',
+      clickable ? 'cursor-pointer hover:scale-[1.02]' : ''
+    ].join(' ');
+
     return (
-      <div className="group relative flex flex-col items-center text-center w-24">
+      <div className={classes} onClick={opts?.onClick}>
         <div className="relative w-16 h-16 flex items-center justify-center">
           {shirt ? (
             <img src={shirt} alt="shirt" className="object-contain max-h-16" />
@@ -111,18 +159,59 @@ export default function TeamPlanner({ picks, entry }: { picks?: EntryEventPicks,
           {pl.web_name}
         </div>
         <div className="w-full px-2 py-1 text-[11px] font-semibold bg-violet-700 text-white shadow rounded-none">
-          {showTbd ? 'TBD' : pts}
+          {showTbd ? (fix ? `${fix.opp} (${fix.ha})` : 'TBD') : pts}
         </div>
         {typeof pl.selected_by_percent !== 'undefined' && (
           <div className="w-full text-[10px] bg-black/70 px-2 py-1 text-white/90 rounded-b-md">
             Sel: {pl.selected_by_percent}%
           </div>
         )}
-        {fix && (
+        {fix && !showTbd && (
           <div className="mt-0.5 text-[10px] text-zinc-700">{fix.opp} ({fix.ha})</div>
         )}
       </div>
     );
+  };
+
+  const benchBadge = (elementId: number) => {
+    const et = players?.[elementId]?.element_type;
+    if (et === 1) return 'GK';
+    if (et === 2) return 'DEF';
+    if (et === 3) return 'MID';
+    return 'FWD';
+  };
+
+  const renderStarter = (p: any) => {
+    const id = p.element;
+    const isActive = selectedStarter === id;
+    const onClick = () => setSelectedStarter((cur) => (cur === id ? null : id));
+    return tile(id, p.is_captain ? 'C' : p.is_vice_captain ? 'VC' : undefined, { onClick, active: isActive });
+  };
+
+  const swapWithBench = (benchElementId: number) => {
+    setPlanPicks((prev) => {
+      if (!prev || !selectedStarter) return prev;
+      const next = { ...prev, picks: prev.picks.map((x) => ({ ...x })) } as EntryEventPicks;
+      const sIdx = next.picks.findIndex((x) => x.position <= 11 && x.element === selectedStarter);
+      const bIdx = next.picks.findIndex((x) => x.position > 11 && x.element === benchElementId);
+      if (sIdx >= 0 && bIdx >= 0) {
+        const sPos = next.picks[sIdx].position;
+        const bPos = next.picks[bIdx].position;
+        const s = next.picks[sIdx];
+        const b = next.picks[bIdx];
+        next.picks[sIdx] = { ...b, position: sPos, is_captain: s.is_captain && players?.[b.element]?.element_type !== 1 ? s.is_captain : false, is_vice_captain: s.is_vice_captain && players?.[b.element]?.element_type !== 1 ? s.is_vice_captain : false, multiplier: 1 } as any;
+        next.picks[bIdx] = { ...s, position: bPos, is_captain: false, is_vice_captain: false, multiplier: 1 } as any;
+      }
+      return next;
+    });
+    setSelectedStarter(null);
+  };
+
+  const renderBench = (p: any) => {
+    const id = p.element;
+    const eligible = isBenchEligibleForSelected(id);
+    const onClick = selectedStarter && eligible ? () => swapWithBench(id) : undefined;
+    return tile(id, benchBadge(id), { onClick, disabled: selectedStarter ? !eligible : false });
   };
 
   const gkRow = useMemo(() => starters.filter((p) => players?.[p.element]?.element_type === 1), [starters, players]);
@@ -130,15 +219,45 @@ export default function TeamPlanner({ picks, entry }: { picks?: EntryEventPicks,
   const midRow = useMemo(() => starters.filter((p) => players?.[p.element]?.element_type === 3), [starters, players]);
   const fwdRow = useMemo(() => starters.filter((p) => players?.[p.element]?.element_type === 4), [starters, players]);
 
-  if (!picks) return <div className="p-4 text-sm text-zinc-600">Load a team to use the planner.</div>;
+  if (!planPicks) return <div className="p-4 text-sm text-zinc-600">Load a team to use the planner.</div>;
 
   const headerPoints = gw > currentGw ? 'TBD' : calc ? String((calc.totalOnField ?? 0) + (calc.benchTotal ?? 0)) : '0';
 
   return (
     <div className="grid grid-cols-1 gap-6 p-6 min-h-screen">
       <div className="bg-white rounded-2xl p-0 shadow-sm border border-zinc-200 min-h-[360px] overflow-hidden">
+        {/* Top bar (dashboard style) */}
+        <div className="px-6 pt-5 pb-4 border-b border-white/10 bg-[#3a0a3f]">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white">
+              <button
+                onClick={() => setGw((g) => Math.max(1, g - 1))}
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                aria-label="Previous gameweek"
+              >
+                ‹
+              </button>
+              <div className="text-lg md:text-xl font-semibold text-white">Gameweek {gw}</div>
+              <button
+                onClick={() => setGw((g) => Math.min(maxGw, g + 1))}
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                aria-label="Next gameweek"
+              >
+                ›
+              </button>
+            </div>
+            <div className="text-right">
+              <div className={`inline-block rounded-2xl px-3 py-1.5 shadow ${headerPoints === 'TBD' ? 'bg-emerald-600/20' : 'bg-gradient-to-br from-sky-400 to-violet-600'} text-white`}>
+                <span className="text-2xl font-bold">{headerPoints}</span>
+              </div>
+              <div className="text-[15px] mt-0.5 text-white/90">Latest Points</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pitch / team view */}
         <div
-          className="px-6 pt-24 pb-10"
+          className="relative px-6 pt-28 pb-10"
           style={{
             backgroundImage: `linear-gradient(rgba(0,0,0,0.06), rgba(0,0,0,0.06)), url(/assets/pitch-bg.png)`,
             backgroundSize: 'cover',
@@ -146,54 +265,32 @@ export default function TeamPlanner({ picks, entry }: { picks?: EntryEventPicks,
             backgroundRepeat: 'no-repeat',
           }}
         >
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setGw((g) => Math.max(1, g - 1))}
-                className="p-1.5 rounded-full bg-black/10 hover:bg-black/20 text-zinc-800"
-                aria-label="Previous gameweek"
-              >
-                ‹
-              </button>
-              <div className="text-base sm:text-lg font-semibold text-zinc-900">Gameweek {gw}</div>
-              <button
-                onClick={() => setGw((g) => Math.min(maxGw, g + 1))}
-                className="p-1.5 rounded-full bg-black/10 hover:bg-black/20 text-zinc-800"
-                aria-label="Next gameweek"
-              >
-                ›
-              </button>
-            </div>
-            <div className="text-right">
-              <div className={`inline-flex items-center justify-center rounded-xl px-3 py-2 shadow-sm ${headerPoints === 'TBD' ? 'bg-emerald-600/10 text-emerald-700' : 'bg-gradient-to-br from-sky-400 to-violet-600 text-white'}`}>
-                <span className="text-xl font-extrabold">{headerPoints}</span>
-              </div>
-              <div className="text-[11px] mt-1 text-zinc-800">Latest Points</div>
-            </div>
-          </div>
+          {selectedStarter && (
+            <div className="absolute inset-0 backdrop-blur-sm bg-black/10 pointer-events-none rounded-2xl z-0" />
+          )}
 
           {loading && <div className="text-xs text-zinc-700 mb-3">Loading live points…</div>}
 
-          <div className="space-y-8">
+          <div className="relative z-10 space-y-8">
             <div className="flex justify-center gap-4">
-              {gkRow.map((p) => tile(p.element, p.is_captain ? 'C' : p.is_vice_captain ? 'VC' : undefined))}
+              {gkRow.map((p) => renderStarter(p))}
             </div>
             <div className="flex justify-center gap-4 flex-wrap">
-              {defRow.map((p) => tile(p.element, p.is_captain ? 'C' : p.is_vice_captain ? 'VC' : undefined))}
+              {defRow.map((p) => renderStarter(p))}
             </div>
             <div className="flex justify-center gap-4 flex-wrap">
-              {midRow.map((p) => tile(p.element, p.is_captain ? 'C' : p.is_vice_captain ? 'VC' : undefined))}
+              {midRow.map((p) => renderStarter(p))}
             </div>
             <div className="flex justify-center gap-4 flex-wrap">
-              {fwdRow.map((p) => tile(p.element, p.is_captain ? 'C' : p.is_vice_captain ? 'VC' : undefined))}
+              {fwdRow.map((p) => renderStarter(p))}
             </div>
           </div>
 
           <div className="mt-8">
-            <div className="mb-2"><span className="inline-block text-sm font-semibold text-zinc-700 bg-zinc-100 px-3 py-1 rounded-lg">Substitutes</span></div>
-            <div className="rounded-2xl bg-white/80 backdrop-blur p-3 border border-white/60">
+            <div className="mb-2"><span className="inline-block text-sm font-semibold text-white bg-white/15 px-3 py-1 rounded-lg shadow-sm">Substitutes</span></div>
+            <div className="rounded-2xl bg-white/15 p-3 backdrop-blur-sm">
               <div className="grid grid-cols-4 gap-2">
-                {bench.map((p) => tile(p.element))}
+                {(selectedStarter ? eligibleBench : bench).map((p) => renderBench(p))}
               </div>
             </div>
           </div>

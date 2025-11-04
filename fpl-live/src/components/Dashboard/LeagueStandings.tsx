@@ -40,6 +40,7 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
       .catch((err) => console.error('Failed to fetch standings:', err));
   }, [selectedLeague]);
 
+
   const filtered = standings.filter(
     (s) =>
       s.player_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -101,7 +102,10 @@ export default function LeagueStandings({ teamId }: { teamId: number }) {
           return (
             <motion.div
               key={s.entry}
-              className="flex justify-between items-center border-b border-zinc-200 p-3 hover:bg-zinc-100 cursor-pointer transition-colors"
+              className={[
+                'flex justify-between items-center border-b border-zinc-200 p-3 cursor-pointer transition-colors',
+                s.entry === teamId ? 'bg-gradient-to-r from-sky-200 via-indigo-200 to-fuchsia-200' : 'hover:bg-zinc-100'
+              ].join(' ')}
               onClick={() => setSelectedPlayer(s)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

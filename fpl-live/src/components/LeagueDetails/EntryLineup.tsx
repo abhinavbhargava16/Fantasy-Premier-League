@@ -61,20 +61,20 @@ export default function EntryLineup({ entryId }: { entryId: number }) {
           {badge && <div className="absolute -top-1 -right-1 text-[10px] bg-amber-400 rounded px-1">★</div>}
           {isC && <div className="absolute -bottom-1 -right-1 text-[10px] bg-black text-white rounded-full w-4 h-4 flex items-center justify-center">C</div>}
         </div>
-        <div className="mt-1 text-[11px] text-center text-zinc-800 max-w-16 truncate">{pl.web_name}</div>
-        <div className="mt-0.5 text-[11px] font-semibold text-white bg-fplPurple rounded px-2">{pts}</div>
+        <div className="mt-1 text-[14px] text-center text-white max-w-16">{pl.web_name}</div>
+        <div className="mt-0.5 text-[13px] font-semibold text-white bg-fplPurple rounded px-2">{pts}</div>
       </div>
     )
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-zinc-200 p-3 bg-zinc-50">
+    <div className="mt-3 rounded-lg border border-zinc-200 p-3 bg-[#5f873a]">
       <div className="grid grid-cols-5 sm:grid-cols-6 gap-3">
         {starters.map((p) => (
           <Tile key={p.element} elementId={p.element} />
         ))}
       </div>
-      <div className="mt-3 text-xs text-zinc-600">Bench</div>
+      <div className="mt-3 text-lg text-white">Bench</div>
       <div className="mt-1 grid grid-cols-4 gap-3">
         {bench.map((p, i) => (
           <Tile key={p.element} elementId={p.element} badge={i === 3} />
@@ -83,4 +83,3 @@ export default function EntryLineup({ entryId }: { entryId: number }) {
     </div>
   )
 }
-
