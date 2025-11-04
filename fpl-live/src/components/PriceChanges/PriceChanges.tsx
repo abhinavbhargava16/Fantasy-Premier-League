@@ -128,7 +128,7 @@ export default function PriceChanges() {
                 {shirt ? <img src={shirt} className="h-6 w-6" /> : <div className="h-6 w-6 bg-zinc-200 rounded" />}
                 <div>
                   <div className="font-medium text-zinc-900">{r.name}</div>
-                  <div className="text-xs text-zinc-500">{posLabel(r.position)} £{r.price.toFixed(1)}</div>
+                  <div className="text-s text-red-600">{posLabel(r.position)} £{r.price.toFixed(1)}</div>
                 </div>
               </div>
               <div className="col-span-2 text-zinc-700">{r.teamName}</div>

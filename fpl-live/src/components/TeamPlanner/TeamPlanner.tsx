@@ -127,6 +127,7 @@ export default function TeamPlanner({ picks, entry: _entry }: { picks?: EntryEve
     const code = teamCodeById[pl.team];
     const shirt = code ? `/assets/shirts/${code}.png` : undefined;
     const fix = oppByTeam[pl.team];
+    const isFinished = !!fix?.finished;
     const liveStats = localLive?.[id];
     const hasNotStartedGw = gw > currentGw;
     const matchNotStarted = !!fix && !fix.started && !fix.finished;
@@ -136,7 +137,7 @@ export default function TeamPlanner({ picks, entry: _entry }: { picks?: EntryEve
     // Card UI aligned with TeamView/EntryLineup style
     const clickable = !!opts?.onClick;
     const classes = [
-      'group relative flex flex-col items-center text-center w-24 transition-all',
+      'group relative flex flex-col items-center text-center w-[5.75rem] transition-all',
       opts?.active ? 'ring-2 ring-white/90 rounded-xl bg-white/10' : '',
       opts?.disabled ? 'opacity-50 pointer-events-none' : '',
       clickable ? 'cursor-pointer hover:scale-[1.02]' : ''
@@ -144,11 +145,11 @@ export default function TeamPlanner({ picks, entry: _entry }: { picks?: EntryEve
 
     return (
       <div className={classes} onClick={opts?.onClick}>
-        <div className="relative w-16 h-16 flex items-center justify-center">
+        <div className="relative w-[4rem] h-[4rem] flex items-center justify-center">
           {shirt ? (
-            <img src={shirt} alt="shirt" className="object-contain max-h-16" />
+            <img src={shirt} alt="shirt" className="object-contain max-h-[4rem]" />
           ) : (
-            <div className="w-12 h-12 bg-zinc-300 rounded" />
+            <div className="w-[4rem] h-[4rem] bg-zinc-300 rounded" />
           )}
           {badge && (
             <div className="absolute -top-1 -right-1 text-[10px] bg-violet-600 text-white rounded px-1 shadow">{badge}</div>
@@ -162,12 +163,16 @@ export default function TeamPlanner({ picks, entry: _entry }: { picks?: EntryEve
           {showTbd ? (fix ? `${fix.opp} (${fix.ha})` : 'TBD') : pts}
         </div>
         {typeof pl.selected_by_percent !== 'undefined' && (
-          <div className="w-full text-[10px] bg-black/70 px-2 py-1 text-white/90 rounded-b-md">
+          <div className={`w-full text-[10px] bg-black/70 px-2 py-1 text-white/90 ${isFinished ? 'rounded-none' : 'rounded-b-md'}`}>
             Sel: {pl.selected_by_percent}%
           </div>
         )}
         {fix && !showTbd && (
-          <div className="mt-0.5 text-[10px] text-zinc-700">{fix.opp} ({fix.ha})</div>
+          isFinished ? (
+            <div className="w-full px-2 py-1 text-[11px] font-semibold bg-emerald-600 text-white shadow rounded-b-md">{fix.opp} ({fix.ha})</div>
+          ) : (
+            <div className="mt-0.5 text-[10px] text-zinc-700">{fix.opp} ({fix.ha})</div>
+          )
         )}
       </div>
     );
@@ -224,15 +229,16 @@ export default function TeamPlanner({ picks, entry: _entry }: { picks?: EntryEve
   const headerPoints = gw > currentGw ? 'TBD' : calc ? String((calc.totalOnField ?? 0) + (calc.benchTotal ?? 0)) : '0';
 
   return (
-    <div className="grid grid-cols-1 gap-6 p-6 min-h-screen">
-      <div className="bg-white rounded-2xl p-0 shadow-sm border border-zinc-200 min-h-[360px] overflow-hidden">
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-6 p-6 min-h-screen">
+      <div className="bg-white rounded-2xl p-0 shadow-sm border border-zinc-200 min-h-[360px] overflow-hidden order-1">
         {/* Top bar (dashboard style) */}
         <div className="px-6 pt-5 pb-4 border-b border-white/10 bg-[#3a0a3f]">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2 text-white">
               <button
                 onClick={() => setGw((g) => Math.max(1, g - 1))}
-                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                disabled={loading}
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white disabled:opacity-50"
                 aria-label="Previous gameweek"
               >
                 ‹
@@ -240,7 +246,8 @@ export default function TeamPlanner({ picks, entry: _entry }: { picks?: EntryEve
               <div className="text-lg md:text-xl font-semibold text-white">Gameweek {gw}</div>
               <button
                 onClick={() => setGw((g) => Math.min(maxGw, g + 1))}
-                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                disabled={loading}
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white disabled:opacity-50"
                 aria-label="Next gameweek"
               >
                 ›
@@ -256,46 +263,59 @@ export default function TeamPlanner({ picks, entry: _entry }: { picks?: EntryEve
         </div>
 
         {/* Pitch / team view */}
+        {/* Pitch area only */}
         <div
-          className="relative px-6 pt-28 pb-10"
+          className="px-6 pt-32 pb-16"
           style={{
             backgroundImage: `linear-gradient(rgba(0,0,0,0.06), rgba(0,0,0,0.06)), url(/assets/pitch-bg.png)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'top center',
-            backgroundRepeat: 'no-repeat',
+            // First layer (gradient) covers container, second layer (pitch) is slightly taller to fit cards
+            backgroundSize: '100% 100%, 100% 120%',
+            backgroundPosition: 'top center, top center',
+            backgroundRepeat: 'no-repeat, no-repeat',
           }}
         >
-          {selectedStarter && (
-            <div className="absolute inset-0 backdrop-blur-sm bg-black/10 pointer-events-none rounded-2xl z-0" />
-          )}
+          <div className="relative">
+            {selectedStarter && (
+              <div className="absolute inset-0 backdrop-blur-sm bg-black/10 pointer-events-none rounded-2xl z-0" />
+            )}
+            {loading && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 backdrop-blur-sm" aria-busy="true" aria-live="polite">
+                <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/80 text-zinc-700 shadow border border-zinc-200">
+                  <div className="h-5 w-5 rounded-full border-2 border-zinc-400 border-t-transparent animate-spin" />
+                  <span className="text-sm">Updating planner…</span>
+                </div>
+              </div>
+            )}
 
-          {loading && <div className="text-xs text-zinc-700 mb-3">Loading live points…</div>}
-
-          <div className="relative z-10 space-y-8">
-            <div className="flex justify-center gap-4">
-              {gkRow.map((p) => renderStarter(p))}
-            </div>
-            <div className="flex justify-center gap-4 flex-wrap">
-              {defRow.map((p) => renderStarter(p))}
-            </div>
-            <div className="flex justify-center gap-4 flex-wrap">
-              {midRow.map((p) => renderStarter(p))}
-            </div>
-            <div className="flex justify-center gap-4 flex-wrap">
-              {fwdRow.map((p) => renderStarter(p))}
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <div className="mb-2"><span className="inline-block text-sm font-semibold text-white bg-white/15 px-3 py-1 rounded-lg shadow-sm">Substitutes</span></div>
-            <div className="rounded-2xl bg-white/15 p-3 backdrop-blur-sm">
-              <div className="grid grid-cols-4 gap-2">
-                {(selectedStarter ? eligibleBench : bench).map((p) => renderBench(p))}
+            <div className="relative z-0 space-y-7">
+              <div className="flex justify-center gap-3">
+                {gkRow.map((p) => renderStarter(p))}
+              </div>
+              <div className="flex justify-center gap-3 flex-wrap">
+                {defRow.map((p) => renderStarter(p))}
+              </div>
+              <div className="flex justify-center gap-3 flex-wrap">
+                {midRow.map((p) => renderStarter(p))}
+              </div>
+              <div className="flex justify-center gap-3 flex-wrap">
+                {fwdRow.map((p) => renderStarter(p))}
               </div>
             </div>
+
           </div>
         </div>
       </div>
+      {/* Substitutes bench rendered outside the team view container */}
+      <aside className="order-2 lg:order-1">
+        <div className="mb-2"><span className="inline-block text-sm font-semibold text-white bg-white/15 px-3 py-1 rounded-lg shadow-sm">Substitutes</span></div>
+        <div className="rounded-2xl bg-white/15 p-3 backdrop-blur-sm">
+          <div className="grid grid-cols-4 gap-2 lg:grid-cols-1 lg:gap-3 place-items-center">
+            {(selectedStarter ? eligibleBench : bench).map((p, i) => (
+              <div key={i}>{renderBench(p)}</div>
+            ))}
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
