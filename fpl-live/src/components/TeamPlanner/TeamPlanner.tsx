@@ -5,7 +5,7 @@ import { useFPLStore } from '../../store/fplStore';
 import { getLive } from '../../services/fplApi';
 import { calculatePoints } from '../../services/scoreCalculator';
 
-export default function TeamPlanner({ picks, entry }: { picks?: EntryEventPicks, entry?: EntrySummary }) {
+export default function TeamPlanner({ picks, entry: _entry }: { picks?: EntryEventPicks, entry?: EntrySummary }) {
   const { players, bootstrap, fixtures, currentEvent, live } = useFPLStore();
   const events = bootstrap?.events ?? [];
   const maxGw = useMemo(() => (events.length ? Math.max(...events.map(e => e.id)) : 38), [events]);

@@ -8,7 +8,7 @@ export default function RankDetails({ picks, entry }: { picks?: EntryEventPicks;
   const { players, live, currentEvent } = useFPLStore()
   const { bootstrap } = useFPLStore()
   const [oldRank, setOldRank] = useState<number | null>(null)
-  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [, setLoadingHistory] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -19,7 +19,7 @@ export default function RankDetails({ picks, entry }: { picks?: EntryEventPicks;
         const hist = await getEntryHistory(entry.id)
         // Find previous GW overall_rank from current season history
         const gw = currentEvent?.id ?? undefined
-        const past = (hist?.current ?? hist?.history ?? hist?.past ?? hist?.season_history ?? hist?.events ?? []) as any[]
+        // const past = (hist?.current ?? hist?.history ?? hist?.past ?? hist?.season_history ?? hist?.events ?? []) as any[]
         // Attempt to find event gw-1
         const prev = gw && Array.isArray(hist?.current) ? hist.current.find((i: any) => i.event === gw - 1) : null
         const prevRank = prev?.overall_rank ?? hist?.current?.slice(-1)?.[0]?.overall_rank ?? null

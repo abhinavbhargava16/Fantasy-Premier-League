@@ -19,8 +19,8 @@ export default function FixturesPanel() {
   }, [bootstrap]);
 
   const list = useMemo(() => {
-    if (!activeGW || !fixtures) return [] as typeof fixtures;
-    return fixtures.filter((f) => f.event === activeGW);
+    if (!activeGW) return [] as any[];
+    return (fixtures ?? []).filter((f) => f.event === activeGW);
   }, [fixtures, activeGW]);
 
   const badge = (teamId: number) => {

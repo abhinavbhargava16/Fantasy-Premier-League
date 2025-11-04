@@ -2,8 +2,25 @@ import { useMemo, useState } from 'react'
 import { getPlayerXG, getTeamXG } from '../../services/analyticsApi'
 import { useFPLStore } from '../../store/fplStore'
 
-type PlayerResp = { player: string; totalXG: number; totalXA: number; matches: any[]; error?: string }
-type TeamResp = { team: string; xG: number; xGA: number; xCS: number; error?: string }
+type PlayerResp = {
+  player: string
+  totalXG: number
+  totalXA: number
+  matches: any[]
+  error?: string
+  // optional fields from backend for nicer UI
+  playerName?: string
+  badgeUrl?: string
+}
+type TeamResp = {
+  team: string
+  xG: number
+  xGA: number
+  xCS: number
+  error?: string
+  // optional branding
+  badgeUrl?: string
+}
 
 export default function Analytics() {
   const { bootstrap } = useFPLStore()

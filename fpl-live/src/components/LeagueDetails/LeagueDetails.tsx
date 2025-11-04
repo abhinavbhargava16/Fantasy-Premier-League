@@ -49,7 +49,7 @@ export default function LeagueDetails() {
   const [expanded, setExpanded] = useState<number | null>(null)
   const [monthFilter, setMonthFilter] = useState<string>('')
   const [monthlyPoints, setMonthlyPoints] = useState<Record<number, number>>({})
-  const [loadingMonth, setLoadingMonth] = useState(false)
+  const [, setLoadingMonth] = useState(false)
   const [leagueName, setLeagueName] = useState<string>('')
 
   useEffect(() => {

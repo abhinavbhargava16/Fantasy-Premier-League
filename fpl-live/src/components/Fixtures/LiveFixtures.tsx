@@ -118,7 +118,7 @@ export default function LiveFixtures() {
     <div className="max-w-6xl mx-auto px-4 py-6">
       <div className="text-2xl font-semibold mb-4 text-white">Gameweek {currentGw} Games</div>
       <div className="grid md:grid-cols-2 gap-6">
-        {byFixture.map(({ f, home, away, hGoals, aGoals, hAssists, aAssists, bpsTop, hBps, aBps, awards, hDefcon, aDefcon }) => (
+        {byFixture.map(({ f, home, away, hGoals, aGoals, hAssists, aAssists, hBps, aBps, awards, hDefcon, aDefcon }) => (
           <div
             key={f.id}
             className="rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-sm"
@@ -161,19 +161,19 @@ export default function LiveFixtures() {
               {/* Scorers/Assisters with center divider */}
               <div className="grid grid-cols-3 items-start gap-3 text-sm">
                 <div className="text-right space-y-1">
-                  {hGoals.map((g, i) => (
+                  {hGoals.map((g: any, i: number) => (
                     <div key={`hg-${g.id}-${i}`}>{name(g.id)} <span className="ml-1">⚽×{g.n}</span></div>
                   ))}
-                  {hAssists.map((a, i) => (
+                  {hAssists.map((a: any, i: number) => (
                     <div key={`ha-${a.id}-${i}`} className="text-sky-700">{name(a.id)} <span className="ml-1">🅰️×{a.n}</span></div>
                   ))}
                 </div>
                 <div className="h-full w-px bg-zinc-300 mx-auto" />
                 <div className="space-y-1">
-                  {aGoals.map((g, i) => (
+                  {aGoals.map((g: any, i: number) => (
                     <div key={`ag-${g.id}-${i}`}>{name(g.id)} <span className="ml-1">⚽×{g.n}</span></div>
                   ))}
-                  {aAssists.map((a, i) => (
+                  {aAssists.map((a: any, i: number) => (
                     <div key={`aa-${a.id}-${i}`} className="text-sky-700">{name(a.id)} <span className="ml-1">🅰️×{a.n}</span></div>
                   ))}
                 </div>
@@ -189,13 +189,13 @@ export default function LiveFixtures() {
                     <div className="grid grid-cols-2 gap-4 text-sm text-center">
                       <div>
                         <div className="text-s text-zinc-500 mb-1">{home?.short}</div>
-                        {hBps.slice(0,6).map((x) => (
+                        {hBps.slice(0,6).map((x: any) => (
                           <div key={`hb-${x.id}`}>{name(x.id)} {awards[x.id] && <span className="ml-1">{awards[x.id]}</span>} <span className="text-zinc-500">({x.bps})</span></div>
                         ))}
                       </div>
                       <div>
                         <div className="text-s text-zinc-500 mb-1">{away?.short}</div>
-                        {aBps.slice(0,6).map((x) => (
+                        {aBps.slice(0,6).map((x: any) => (
                           <div key={`ab-${x.id}`}>{name(x.id)} {awards[x.id] && <span className="ml-1">{awards[x.id]}</span>} <span className="text-zinc-500">({x.bps})</span></div>
                         ))}
                       </div>
@@ -207,13 +207,13 @@ export default function LiveFixtures() {
                     <div className="grid grid-cols-2 gap-4 text-sm text-center">
                       <div>
                         <div className="text-s text-zinc-500 mb-1">{home?.short}</div>
-                        {hDefcon.slice(0,6).map((x) => (
+                        {hDefcon.slice(0,6).map((x: any) => (
                           <div key={`hd-${x.id}`}>{name(x.id)} <span className="text-zinc-500">({x.v})</span></div>
                         ))}
                       </div>
                       <div>
                         <div className="text-s text-zinc-500 mb-1">{away?.short}</div>
-                        {aDefcon.slice(0,6).map((x) => (
+                        {aDefcon.slice(0,6).map((x: any) => (
                           <div key={`ad-${x.id}`}>{name(x.id)} <span className="text-zinc-500">({x.v})</span></div>
                         ))}
                       </div>

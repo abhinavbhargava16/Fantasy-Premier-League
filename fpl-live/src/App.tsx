@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Link, NavLink } from 'react-router-dom'
 import { useBootstrap } from './hooks/useFPLData'
 import { useLiveScores } from './hooks/useLiveScores'
